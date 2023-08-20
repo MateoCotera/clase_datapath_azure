@@ -1,0 +1,7 @@
+{
+	"name": "IR-LOCALMACHINE",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "Integration Runtime Self-hosted, conecta a pc local"
+	}
+}

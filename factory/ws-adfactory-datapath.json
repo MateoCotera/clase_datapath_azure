@@ -1,0 +1,9 @@
+{
+	"name": "ws-adfactory-datapath",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "903fbe59-c35f-4216-a7c2-534a19ce21c8",
+		"tenantId": "0cf11b83-d338-43a4-ba90-34cfa9985885"
+	}
+}
