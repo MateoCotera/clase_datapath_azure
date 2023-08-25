@@ -1,17 +1,24 @@
 {
 	"name": "ls_fl_azure",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "FileServer",
 		"typeProperties": {
 			"host": "C:\\data_adf",
 			"userId": "mateo",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI2NGQyMTUzOC0yMDQzLTRlOTEtYTNlNS0yZGM0MjRmYTNjNjciLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_kay_vault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "keyvirtualmachine"
+			}
 		},
 		"connectVia": {
 			"referenceName": "IR-LOCALMACHINE",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
