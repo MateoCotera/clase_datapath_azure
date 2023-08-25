@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ws-adfactory-datapath"
+		},
+		"ls_adls_datapath_azure_accountKey": {
+			"value": ""
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://mateo.vault.azure.net/"
+		},
+		"ls_adls_datapath_azure_properties_typeProperties_url": {
+			"value": "https://adatalakestoragedatapath.dfs.core.windows.net/"
+		},
+		"ls_fl_azure_properties_typeProperties_host": {
+			"value": "C:\\data_adf"
+		},
+		"ls_fl_azure_properties_typeProperties_userId": {
+			"value": "mateo"
+		},
+		"ls_kay_vault_properties_typeProperties_baseUrl": {
+			"value": "https://keyproyectofinaldatapath.vault.azure.net/"
+		}
+	}
+}
