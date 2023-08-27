@@ -31,7 +31,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     fecha as string ('2021-05-01')",
+				"     fecha as string ('2021-11-01')",
 				"}",
 				"source(output(",
 				"          SalesOrderNumber as string,",
