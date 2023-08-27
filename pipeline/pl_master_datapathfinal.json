@@ -66,23 +66,6 @@
 						}
 					}
 				}
-			},
-			{
-				"name": "Fallo_bronze",
-				"description": "Fallo en el cargue del archivo a la capa bronze",
-				"type": "Fail",
-				"dependsOn": [
-					{
-						"activity": "Bronze",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"message": "'Fallo en el cargue del archivo a la capa bronze'"
-				}
 			}
 		],
 		"parameters": {
