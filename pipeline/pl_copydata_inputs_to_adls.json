@@ -52,7 +52,10 @@
 						"referenceName": "ds_fs_csv_azure",
 						"type": "DatasetReference",
 						"parameters": {
-							"file_name": "2021.csv"
+							"file_name": {
+								"value": "@pipeline().parameters.Filename",
+								"type": "Expression"
+							}
 						}
 					}
 				],
@@ -64,6 +67,11 @@
 				]
 			}
 		],
+		"parameters": {
+			"Filename": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2023-08-20T04:22:10Z"
 	},
