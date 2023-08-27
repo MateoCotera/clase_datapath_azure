@@ -5,11 +5,6 @@
 			"referenceName": "ls_adls_datapath_azure",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"Filename": {
-				"type": "String"
-			}
-		},
 		"folder": {
 			"name": "Azure Data Lake"
 		},
