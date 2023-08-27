@@ -1,0 +1,23 @@
+{
+	"name": "ds_parquet_gold_input",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_datapath_azure",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Azure Data Lake"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "gold/2021",
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
