@@ -1,0 +1,32 @@
+{
+	"name": "ds_parquet_silver",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_datapath_azure",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Tablename": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Azure Data Lake"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().Tablename",
+					"type": "Expression"
+				},
+				"folderPath": "silver",
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
