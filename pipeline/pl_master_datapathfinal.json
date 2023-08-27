@@ -1,6 +1,98 @@
 {
-	"name": "pipeline1",
+	"name": "pl_master_datapathfinal",
 	"properties": {
+		"activities": [
+			{
+				"name": "Bronze",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_copydata_inputs_to_adls",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Filename": {
+							"value": "@pipeline().parameters.Nombrearchivo",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Silver",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_copydata_to_silver_adls",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Gold",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_copydata_to_gold_adls",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Fechaminima": {
+							"value": "@pipeline().parameters.FechaMinima",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Fallo_bronze",
+				"description": "Fallo en el cargue del archivo a la capa bronze",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "Bronze",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "'Fallo en el cargue del archivo a la capa bronze'"
+				}
+			}
+		],
+		"parameters": {
+			"Nombrearchivo": {
+				"type": "string"
+			},
+			"FechaMinima": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
