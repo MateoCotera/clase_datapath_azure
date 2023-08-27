@@ -20,7 +20,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     Fechafiltro as date",
+				"     Fechafiltro as string",
 				"}",
 				"source(output(",
 				"          SalesOrderNumber as string,",
@@ -37,8 +37,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet') ~> parquetsilver",
-				"parquetsilver filter(OrderDate >= $Fechafiltro",
-				") ~> filterfecha"
+				"parquetsilver filter(OrderDate >= toDate(toString($Fechafiltro), 'yyyy-MM-dd')) ~> filterfecha"
 			]
 		}
 	}
