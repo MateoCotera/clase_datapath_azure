@@ -1,0 +1,52 @@
+{
+	"name": "dataflow_copy_silver",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_datalakes_csv_input",
+						"type": "DatasetReference"
+					},
+					"name": "filecsv"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_parquet_silver",
+						"type": "DatasetReference"
+					},
+					"name": "silver"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          SalesOrderNumber as string,",
+				"          SalesOrderLineNumber as integer,",
+				"          OrderDate as date,",
+				"          CustomerName as string,",
+				"          EmailAddress as string,",
+				"          Item as string,",
+				"          Quantity as integer,",
+				"          UnitPrice as double,",
+				"          TaxAmount as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     ignoreNoFilesFound: false) ~> filecsv",
+				"filecsv sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> silver"
+			]
+		}
+	}
+}
