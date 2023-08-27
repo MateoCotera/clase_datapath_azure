@@ -37,7 +37,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet') ~> parquetsilver",
-				"parquetsilver filter(OrderDate >= toDate($Fechafiltro,'yyyyMMdd')\r",
+				"parquetsilver filter(OrderDate >= $Fechafiltro",
 				") ~> filterfecha"
 			]
 		}
