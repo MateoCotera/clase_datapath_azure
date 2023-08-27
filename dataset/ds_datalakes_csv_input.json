@@ -5,6 +5,11 @@
 			"referenceName": "ls_adls_datapath_azure",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Nombrefile": {
+				"type": "string"
+			}
+		},
 		"folder": {
 			"name": "Azure Data Lake"
 		},
@@ -13,7 +18,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "2021.csv",
+				"fileName": {
+					"value": "@dataset().Nombrefile",
+					"type": "Expression"
+				},
 				"folderPath": "bronze",
 				"fileSystem": "datalake"
 			},
