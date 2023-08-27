@@ -14,7 +14,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": "2021",
-				"folderPath": "silver",
+				"folderPath": "silver/2021",
 				"fileSystem": "datalake"
 			},
 			"compressionCodec": "snappy"
