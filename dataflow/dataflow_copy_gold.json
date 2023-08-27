@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "dataflow_copy_gold",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -12,16 +12,24 @@
 					"name": "parquetsilver"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_parquet_gold",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "filterfecha"
+				},
+				{
+					"name": "aggpromedio"
 				}
 			],
 			"scriptLines": [
-				"parameters{",
-				"     Fechafiltro as string",
-				"}",
 				"source(output(",
 				"          SalesOrderNumber as string,",
 				"          SalesOrderLineNumber as integer,",
@@ -37,7 +45,18 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet') ~> parquetsilver",
-				"parquetsilver filter(OrderDate >= toDate(toString($Fechafiltro), 'yyyy-MM-dd')) ~> filterfecha"
+				"parquetsilver filter(OrderDate >= toDate('2021-11-01', 'yyyy-MM-dd')) ~> filterfecha",
+				"filterfecha aggregate(groupBy(SalesOrderNumber,",
+				"          OrderDate),",
+				"     Promedio = avg(TaxAmount)) ~> aggpromedio",
+				"aggpromedio sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}
