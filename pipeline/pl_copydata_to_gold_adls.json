@@ -17,7 +17,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "dataflow_copy_gold",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"fecha": {
+								"value": "'@{pipeline().parameters.Fechaminima}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -27,6 +33,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"Fechaminima": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
