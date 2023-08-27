@@ -30,6 +30,9 @@
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     fecha as string ('2021-05-01')",
+				"}",
 				"source(output(",
 				"          SalesOrderNumber as string,",
 				"          SalesOrderLineNumber as integer,",
@@ -45,7 +48,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet') ~> parquetsilver",
-				"parquetsilver filter(OrderDate >= toDate('2021-11-01', 'yyyy-MM-dd')) ~> filterfecha",
+				"parquetsilver filter(OrderDate >= toDate($fecha, 'yyyy-MM-dd')) ~> filterfecha",
 				"filterfecha aggregate(groupBy(SalesOrderNumber,",
 				"          OrderDate),",
 				"     Promedio = avg(TaxAmount)) ~> aggpromedio",
