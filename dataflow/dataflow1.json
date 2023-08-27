@@ -1,0 +1,45 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_parquet_silver_input",
+						"type": "DatasetReference"
+					},
+					"name": "parquetsilver"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "filterfecha"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Fechafiltro as date",
+				"}",
+				"source(output(",
+				"          SalesOrderNumber as string,",
+				"          SalesOrderLineNumber as integer,",
+				"          OrderDate as date,",
+				"          CustomerName as string,",
+				"          EmailAddress as string,",
+				"          Item as string,",
+				"          Quantity as integer,",
+				"          UnitPrice as double,",
+				"          TaxAmount as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> parquetsilver",
+				"parquetsilver filter(OrderDate >= toDate($Fechafiltro,'yyyyMMdd')\r",
+				") ~> filterfecha"
+			]
+		}
+	}
+}

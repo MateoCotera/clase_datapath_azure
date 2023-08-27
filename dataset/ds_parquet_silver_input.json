@@ -1,0 +1,24 @@
+{
+	"name": "ds_parquet_silver_input",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_datapath_azure",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Azure Data Lake"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "part-00000-fd55c33b-92cb-4b88-bdcf-fdfbd2c948a1-c000.snappy.parquet",
+				"folderPath": "silver/2021",
+				"fileSystem": "datalake"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
