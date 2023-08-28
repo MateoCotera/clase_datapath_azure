@@ -7,21 +7,17 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ws-adfactory-datapath"
 		},
-		"ls_adls_datapath_azure_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'ls_adls_datapath_azure'"
-		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://mateo.vault.azure.net/"
 		},
-		"ls_adls_datapath_azure_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://adatalakestoragedatapath.dfs.core.windows.net/"
-		},
 		"ls_kay_vault_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://keyproyectofinaldatapath.vault.azure.net/"
+		},
+		"ls_adls_datapath_azure_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adatalakestoragedatapath.dfs.core.windows.net/"
 		},
 		"ls_fl_azure_properties_typeProperties_host": {
 			"type": "string",
@@ -30,6 +26,14 @@
 		"ls_fl_azure_properties_typeProperties_userId": {
 			"type": "string",
 			"defaultValue": "mateo"
+		},
+		"trigger_master_properties_pipeline_parameters_Nombrearchivo": {
+			"type": "string",
+			"defaultValue": "2021.csv"
+		},
+		"trigger_master_properties_pipeline_parameters_FechaMinima": {
+			"type": "string",
+			"defaultValue": "2021-11-01"
 		}
 	},
 	"variables": {
@@ -45,23 +49,6 @@
 				"type": "AzureKeyVault",
 				"typeProperties": {
 					"baseUrl": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ls_adls_datapath_azure')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('ls_adls_datapath_azure_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('ls_adls_datapath_azure_accountKey')]"
-					}
 				}
 			},
 			"dependsOn": []
@@ -89,6 +76,58 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adls_datapath_azure')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adls_datapath_azure_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_kay_vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "secretodatalake"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_kay_vault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_fl_azure')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('ls_fl_azure_properties_typeProperties_host')]",
+					"userId": "[parameters('ls_fl_azure_properties_typeProperties_userId')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_kay_vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "keyvirtualmachine"
+					}
+				},
+				"connectVia": {
+					"referenceName": "IR-LOCALMACHINE",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/IR-LOCALMACHINE')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_kay_vault')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_datalakes_csv')]",
@@ -122,32 +161,35 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_fl_azure')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/ds_datalakes_csv_input')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "FileServer",
-				"typeProperties": {
-					"host": "[parameters('ls_fl_azure_properties_typeProperties_host')]",
-					"userId": "[parameters('ls_fl_azure_properties_typeProperties_userId')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "ls_kay_vault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "keyvirtualmachine"
-					}
+				"linkedServiceName": {
+					"referenceName": "ls_adls_datapath_azure",
+					"type": "LinkedServiceReference"
 				},
-				"connectVia": {
-					"referenceName": "IR-LOCALMACHINE",
-					"type": "IntegrationRuntimeReference"
-				}
+				"folder": {
+					"name": "Azure Data Lake"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "2021.csv",
+						"folderPath": "bronze",
+						"fileSystem": "datalake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/IR-LOCALMACHINE')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_kay_vault')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_datapath_azure')]"
 			]
 		},
 		{
@@ -226,6 +268,120 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_parquet_gold')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls_datapath_azure",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Azure Data Lake"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "2021",
+						"folderPath": "gold/2021",
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_datapath_azure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_parquet_gold_input')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls_datapath_azure",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Azure Data Lake"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "gold/2021",
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_datapath_azure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_parquet_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls_datapath_azure",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Azure Data Lake"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "2021",
+						"folderPath": "silver/2021",
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_datapath_azure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_parquet_silver_input')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls_datapath_azure",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Azure Data Lake"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "silver/2021",
+						"fileSystem": "datalake"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_datapath_azure')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_copydata_inputs_to_adls')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -263,7 +419,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -281,7 +437,10 @@
 								"referenceName": "ds_fs_csv_azure",
 								"type": "DatasetReference",
 								"parameters": {
-									"file_name": "2021.csv"
+									"file_name": {
+										"value": "@pipeline().parameters.Filename",
+										"type": "Expression"
+									}
 								}
 							}
 						],
@@ -298,12 +457,368 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"parameters": {
+					"Filename": {
+						"type": "String"
+					}
+				},
 				"annotations": [],
 				"lastPublishTime": "2023-08-20T04:22:10Z"
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_fs_csv_azure')]",
 				"[concat(variables('factoryId'), '/datasets/ds_datalakes_csv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow_copy_gold')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_parquet_silver_input",
+								"type": "DatasetReference"
+							},
+							"name": "parquetsilver"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_parquet_gold",
+								"type": "DatasetReference"
+							},
+							"name": "gold"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filterfecha"
+						},
+						{
+							"name": "aggpromedio"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     fecha as string",
+						"}",
+						"source(output(",
+						"          SalesOrderNumber as string,",
+						"          SalesOrderLineNumber as integer,",
+						"          OrderDate as date,",
+						"          CustomerName as string,",
+						"          EmailAddress as string,",
+						"          Item as string,",
+						"          Quantity as integer,",
+						"          UnitPrice as double,",
+						"          TaxAmount as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> parquetsilver",
+						"parquetsilver filter(OrderDate >= toDate($fecha, 'yyyy-MM-dd')) ~> filterfecha",
+						"filterfecha aggregate(groupBy(SalesOrderNumber,",
+						"          OrderDate),",
+						"     Promedio = avg(TaxAmount)) ~> aggpromedio",
+						"aggpromedio sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> gold"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_parquet_silver_input')]",
+				"[concat(variables('factoryId'), '/datasets/ds_parquet_gold')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow_copy_silver')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datalakes_csv_input",
+								"type": "DatasetReference"
+							},
+							"name": "filecsv"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_parquet_silver",
+								"type": "DatasetReference"
+							},
+							"name": "silver"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> filecsv",
+						"filecsv sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> silver"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datalakes_csv_input')]",
+				"[concat(variables('factoryId'), '/datasets/ds_parquet_silver')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_copydata_to_gold_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Dataflow copy to gold",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow_copy_gold",
+								"type": "DataFlowReference",
+								"parameters": {
+									"fecha": {
+										"value": "'@{pipeline().parameters.Fechaminima}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"parquetsilver": {},
+									"gold": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"Fechaminima": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow_copy_gold')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_copydata_to_silver_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data copy to silver",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow_copy_silver",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"filecsv": {},
+									"silver": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow_copy_silver')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_master_datapathfinal')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Bronze",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_copydata_inputs_to_adls",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Filename": {
+									"value": "@pipeline().parameters.Nombrearchivo",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Silver",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_copydata_to_silver_adls",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Gold",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "pl_copydata_to_gold_adls",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Fechaminima": {
+									"value": "@pipeline().parameters.FechaMinima",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"Nombrearchivo": {
+						"type": "string"
+					},
+					"FechaMinima": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_copydata_inputs_to_adls')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_copydata_to_silver_adls')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_copydata_to_gold_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger_master')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "pl_master_datapathfinal",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"Nombrearchivo": "[parameters('trigger_master_properties_pipeline_parameters_Nombrearchivo')]",
+						"FechaMinima": "[parameters('trigger_master_properties_pipeline_parameters_FechaMinima')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Minute",
+					"interval": 1140,
+					"startTime": "2023-08-28T20:14:00Z",
+					"endTime": "2023-08-29T00:14:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_master_datapathfinal')]"
 			]
 		}
 	]

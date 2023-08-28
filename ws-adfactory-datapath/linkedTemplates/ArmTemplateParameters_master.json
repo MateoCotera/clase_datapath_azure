@@ -5,9 +5,6 @@
 		"factoryName": {
 			"value": "ws-adfactory-datapath"
 		},
-		"ls_adls_datapath_azure_accountKey": {
-			"value": ""
-		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://mateo.vault.azure.net/"
 		},
@@ -22,6 +19,12 @@
 		},
 		"ls_kay_vault_properties_typeProperties_baseUrl": {
 			"value": "https://keyproyectofinaldatapath.vault.azure.net/"
+		},
+		"trigger_master_properties_pipeline_parameters_Nombrearchivo": {
+			"value": "2021.csv"
+		},
+		"trigger_master_properties_pipeline_parameters_FechaMinima": {
+			"value": "2021-11-01"
 		},
 		"containerUri": {
 			"value": ""
